@@ -50,6 +50,8 @@ MonoBehaviour:
   - SyncGameState
   - UpdateBatteryImages
   - GameOver
+  - SetBulletSize
+  - SetBulletSizeMultiplier
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

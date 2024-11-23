@@ -8,9 +8,10 @@ public class Bullet : MonoBehaviour
     public float speed = 6f;
     private Vector3 direction;
     private Rigidbody2D rigid;
-    public void Initialize(Vector3 fireDirection)
+    public void Initialize(Vector3 fireDirection,float bulletspeed)
     {
         direction = fireDirection.normalized;
+        speed = bulletspeed;
         
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.Euler(0, 0, angle);

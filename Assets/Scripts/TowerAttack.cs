@@ -11,6 +11,13 @@ public class TowerAttack : MonoBehaviour
     public Transform spawnPoint;
     private float attackRate = 1f;
     private float tempAttackRate = 0f;
+    public float bulletSpeed = 6f;
+
+    private float bulletSizeMultiplier = 1f;
+    // private float bulletSpeedMultiplier = 1f;
+    
+    private Coroutine sizeCoroutine;
+    // private Coroutine speedCoroutine;
 
     private SpriteRenderer sr;
     public PhotonView pv;
@@ -46,6 +53,34 @@ public class TowerAttack : MonoBehaviour
             attackTarget = targetView.transform;
         }
     }
+    
+    [PunRPC]
+    public void SetBulletSizeMultiplier(float multiplier, float duration)
+    {
+        Debug.Log("총알배수대입1");
+        if (sizeCoroutine != null) StopCoroutine(sizeCoroutine);
+        sizeCoroutine = StartCoroutine(ApplyBulletSize(multiplier, duration));
+    }
+    
+    private IEnumerator ApplyBulletSize(float multiplier, float duration)
+    {
+        Debug.Log("총알배수대입2");
+        bulletSizeMultiplier = multiplier;
+        yield return new WaitForSeconds(duration);
+        bulletSizeMultiplier = 1f;
+    }
+    // public void SetBulletSpeedMultiplier(float multiplier, float duration)
+    // {
+    //     if (speedCoroutine != null) StopCoroutine(speedCoroutine);
+    //     speedCoroutine = StartCoroutine(ApplyBulletSpeed(multiplier, duration));
+    // }
+    //
+    // private IEnumerator ApplyBulletSpeed(float multiplier, float duration)
+    // {
+    //     bulletSpeed *= multiplier;
+    //     yield return new WaitForSeconds(duration);
+    //     bulletSpeed /= multiplier;
+    // }
 
     public void AssignTarget(Transform target)
     {
@@ -90,6 +125,9 @@ public class TowerAttack : MonoBehaviour
         Vector2 direction = (attackTarget.position - transform.position).normalized;
         GameObject bullet = PhotonNetwork.Instantiate("Prefabs/Bullet_Test", spawnPoint.position, Quaternion.identity);
         
+        Debug.Log("총알크기배수 : " + bulletSizeMultiplier);
+        bullet.transform.localScale *= bulletSizeMultiplier;
+        
         Debug.Log($"총알 생성: {bullet.name} at {spawnPoint.position}");
         
         TurretBullet bulletComponent = bullet.GetComponent<TurretBullet>();
@@ -101,6 +139,9 @@ public class TowerAttack : MonoBehaviour
             bulletComponent.GetComponent<PhotonView>().RPC("SetColor", RpcTarget.All, towerColor.r, towerColor.g, towerColor.b);
         }
     }
+    
+    
+    
 
     [PunRPC]
     public void SetColor(float r, float g, float b)
