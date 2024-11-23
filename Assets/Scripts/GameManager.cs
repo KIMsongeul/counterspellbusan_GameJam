@@ -12,7 +12,6 @@ public class GameManager : MonoBehaviourPunCallbacks
         PhotonNetwork.ConnectUsingSettings();
     }
 
-    // 마스터 서버 연결 성공시 호출
     public override void OnConnectedToMaster()
     {
         Debug.Log("마스터 서버에 연결되었습니다.");
