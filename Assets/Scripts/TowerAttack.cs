@@ -3,16 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum WeaponState { SearchTarget = 0, AttackToTarget}
 public class TowerAttack : MonoBehaviour
 {
     public GameObject bulletPrefab;
     public Transform spawnPoint;
     private float attackRate = 1f;
     private float tempAttackRate = 0f;
-    private float attackRange = 10f;
 
-    private WeaponState weaponState = WeaponState.SearchTarget;
     private Transform attackTarget = null;
 
 
@@ -21,92 +18,43 @@ public class TowerAttack : MonoBehaviour
         attackTarget = GameObject.Find("Player").transform;
     }
 
-    public void Setup()
-    {
-        
-        ChangeState(WeaponState.SearchTarget);
-    }
-
-    public void ChangeState(WeaponState newState)
-    {
-        StopCoroutine(weaponState.ToString());
-
-        weaponState = newState;
-        StopCoroutine(weaponState.ToString());
-    }
-
     private void Update()
     {
-        if (attackTarget != null)
-        {
-            RatateToTarget(attackTarget);
-        }
+        if (attackTarget == null) return;
+        
+        UpdateAttackCooldown();
+        TryAttack();
+    }
 
+    private void UpdateAttackCooldown()
+    {
         if (tempAttackRate > 0)
         {
             tempAttackRate -= Time.deltaTime;
         }
-        else
+    }
+
+    private void TryAttack()
+    {
+        if (tempAttackRate <= 0)
         {
-            Attack();
+            RotateTowardsTarget();
+            ShootBullet();
             tempAttackRate = attackRate;
         }
     }
 
-    public void RatateToTarget(Transform target)
+    private void RotateTowardsTarget()
     {
-        float dx = target.position.x - transform.position.x;
-        float dy = target.position.y - transform.position.y;
-
-        float degree = Mathf.Atan2(dy, dx) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.Euler(0,0,degree);
+        Vector2 direction = attackTarget.position - transform.position;
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.Euler(0, 0, angle);
     }
 
-    private void Attack()
+    private void ShootBullet()
     {
-        if (attackTarget == null)
-        {
-            ChangeState(WeaponState.SearchTarget);
-            return;
-        }
-
-        if (Vector3.Distance(attackTarget.position, transform.position) > attackRange)
-        {
-            attackTarget = null;
-            ChangeState(WeaponState.SearchTarget);
-            return;
-        }
-        
-        SpawnBullet();
+        Vector2 direction = attackTarget.position - transform.position;
+        GameObject bullet = Instantiate(bulletPrefab, spawnPoint.position, transform.rotation);
+        bullet.GetComponent<Bullet>().Initialize(direction);
     }
-
-    private IEnumerator AttackToTarget()
-    {
-        while (true)
-        {
-            if (attackTarget == null)
-            {
-                ChangeState(WeaponState.SearchTarget);
-                break;
-            }
-
-            float distance = Vector3.Distance(attackTarget.position, transform.position);
-            if (distance > attackRange)
-            {
-                attackTarget = null;
-                ChangeState(WeaponState.SearchTarget);
-                break;
-            }
-
-            yield return new WaitForSeconds(attackRate);
-            SpawnBullet();
-        }
-    }
-
-    public void SpawnBullet()
-    {
-        
-    }
-    
-
 }
