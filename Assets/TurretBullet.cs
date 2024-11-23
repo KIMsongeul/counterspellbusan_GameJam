@@ -7,9 +7,10 @@ public class TurretBullet : MonoBehaviourPunCallbacks
     private Rigidbody2D rb;
     private PhotonView pv;
     private SpriteRenderer sr;
-
+    GameManager gameManager;
     private void Awake()
     {
+        gameManager = FindObjectOfType<GameManager>();
         rb = GetComponent<Rigidbody2D>();
         pv = GetComponent<PhotonView>();
         sr = GetComponent<SpriteRenderer>();
@@ -23,6 +24,9 @@ public class TurretBullet : MonoBehaviourPunCallbacks
     [PunRPC]
     public void Initialize(Vector2 dir)
     {
+        if(!gameManager.isGameInProgress){
+            return;
+        }
         if (rb == null) return;
         
         Vector2 direction = dir.normalized;
@@ -57,6 +61,7 @@ public class TurretBullet : MonoBehaviourPunCallbacks
             if ((isBlue && other.CompareTag("Red")) || (!isBlue && other.CompareTag("Blue")))
             {
                 Debug.Log("적중!");
+                other.GetComponent<PlayerMove>().TakeDamage();
                 DestroyBullet();
             }
         }

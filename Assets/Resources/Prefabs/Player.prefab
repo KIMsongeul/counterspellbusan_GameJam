@@ -50,6 +50,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 4
+  Money: 0
+  HP: 3
   pv: {fileID: 0}
 --- !u!50 &6098945961094165590
 Rigidbody2D:

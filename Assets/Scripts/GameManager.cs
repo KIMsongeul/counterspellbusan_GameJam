@@ -8,10 +8,19 @@ public class GameManager : MonoBehaviourPunCallbacks
 {
     public GameObject playerPrefab;
     public Transform[] spawnPoints;
+    public GameObject gameOverUI;
     private bool isTagSet = false;
+
+    public bool isGameInProgress = false;
+    public PhotonView pv;
+
+    void Awake(){
+        pv = GetComponent<PhotonView>();
+    }
 
     void Start()
     {
+        //pv = GetComponent<PhotonView>();
         GameObject player;
         if(PhotonNetwork.IsMasterClient)
         {
@@ -32,15 +41,15 @@ public class GameManager : MonoBehaviourPunCallbacks
             }
         }
 
-        // 씬 로드 후 약간의 딜레이를 두고 태그 설정
-        StartCoroutine(DelayedTagSetup());
+        StartCoroutine(StartGameWithDelay());
     }
 
-    IEnumerator DelayedTagSetup()
+    IEnumerator StartGameWithDelay()
     {
-        yield return new WaitForSeconds(1f); // 1초 대기
+        yield return new WaitForSeconds(1f);
         SetPlayerTags();
         isTagSet = true;
+        isGameInProgress = true;
     }
 
     void SetPlayerTags()
@@ -83,5 +92,18 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             SetPlayerTags();
         }
+    }
+
+    [PunRPC]
+    public void GameOver(){
+        PhotonNetwork.LeaveRoom();
+    }
+
+    override public void OnLeftRoom(){
+        gameOverUI.SetActive(true);
+    }
+
+    public void ReturnMain(){
+        PhotonNetwork.LoadLevel("Main");
     }
 }
