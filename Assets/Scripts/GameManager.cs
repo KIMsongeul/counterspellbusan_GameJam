@@ -6,21 +6,82 @@ using Photon.Realtime;
 
 public class GameManager : MonoBehaviourPunCallbacks
 {
-    private void Start()
+    public GameObject playerPrefab;
+    public Transform[] spawnPoints;
+    private bool isTagSet = false;
+
+    void Start()
     {
-        // 포톤 서버 연결
-        PhotonNetwork.ConnectUsingSettings();
+        GameObject player;
+        if(PhotonNetwork.IsMasterClient)
+        {
+            player = PhotonNetwork.Instantiate($"Prefabs/{playerPrefab.name}", spawnPoints[0].position, Quaternion.identity);
+            PhotonView photonView = player.GetComponent<PhotonView>();
+            if(photonView != null)
+            {
+                photonView.RPC("SetColor", RpcTarget.All, 0f, 0f, 1f);
+            }
+        }
+        else
+        {
+            player = PhotonNetwork.Instantiate($"Prefabs/{playerPrefab.name}", spawnPoints[1].position, Quaternion.identity);
+            PhotonView photonView = player.GetComponent<PhotonView>();
+            if(photonView != null)
+            {
+                photonView.RPC("SetColor", RpcTarget.All, 1f, 0f, 0f);
+            }
+        }
+
+        // 씬 로드 후 약간의 딜레이를 두고 태그 설정
+        StartCoroutine(DelayedTagSetup());
     }
 
-    public override void OnConnectedToMaster()
+    IEnumerator DelayedTagSetup()
     {
-        Debug.Log("마스터 서버에 연결되었습니다.");
-        // 로비 입장
-        PhotonNetwork.JoinLobby();
-    }   
-    // 룸 입장 성공시 호출
-    public override void OnJoinedRoom()
+        yield return new WaitForSeconds(1f); // 1초 대기
+        SetPlayerTags();
+        isTagSet = true;
+    }
+
+    void SetPlayerTags()
     {
-        Debug.Log("룸에 입장하였습니다.");
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        foreach (GameObject p in players)
+        {
+            PhotonView pv = p.GetComponent<PhotonView>();
+            if (pv != null)
+            {
+                if (PhotonNetwork.IsMasterClient)
+                {
+                    if (!pv.IsMine)
+                    {
+                        p.tag = "Red";
+                    }
+                    else
+                    {
+                        p.tag = "Blue";
+                    }
+                }
+                else
+                {
+                    if (pv.IsMine)
+                    {
+                        p.tag = "Red";
+                    }
+                    else
+                    {
+                        p.tag = "Blue";
+                    }
+                }
+            }
+        }
+    }
+
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        if (isTagSet)
+        {
+            SetPlayerTags();
+        }
     }
 }

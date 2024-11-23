@@ -23,4 +23,8 @@ public class ReadyButton : MonoBehaviour
             readyManager.pv.RPC("OtherClientReady", RpcTarget.All);
         }
     }
+
+    public void Test_Btn(){
+        PhotonNetwork.LoadLevel("Room_Game");
+    }
 }
