@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,12 +9,17 @@ public class TowerAttack : MonoBehaviour
     public GameObject bulletPrefab;
     public Transform spawnPoint;
     private float attackRate = 1f;
+    private float tempAttackRate = 0f;
     private float attackRange = 10f;
 
     private WeaponState weaponState = WeaponState.SearchTarget;
     private Transform attackTarget = null;
-    //private GameObject 
 
+
+    private void Awake()
+    {
+        attackTarget = GameObject.Find("Player").transform;
+    }
 
     public void Setup()
     {
@@ -35,6 +41,16 @@ public class TowerAttack : MonoBehaviour
         {
             RatateToTarget(attackTarget);
         }
+
+        if (tempAttackRate > 0)
+        {
+            tempAttackRate -= Time.deltaTime;
+        }
+        else
+        {
+            Attack();
+            tempAttackRate = attackRate;
+        }
     }
 
     public void RatateToTarget(Transform target)
@@ -44,7 +60,24 @@ public class TowerAttack : MonoBehaviour
 
         float degree = Mathf.Atan2(dy, dx) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.Euler(0,0,degree);
+    }
 
+    private void Attack()
+    {
+        if (attackTarget == null)
+        {
+            ChangeState(WeaponState.SearchTarget);
+            return;
+        }
+
+        if (Vector3.Distance(attackTarget.position, transform.position) > attackRange)
+        {
+            attackTarget = null;
+            ChangeState(WeaponState.SearchTarget);
+            return;
+        }
+        
+        SpawnBullet();
     }
 
     private IEnumerator AttackToTarget()
@@ -72,7 +105,7 @@ public class TowerAttack : MonoBehaviour
 
     public void SpawnBullet()
     {
-        Instantiate(bulletPrefab, spawnPoint.position, Quaternion.identity);
+        
     }
     
 
