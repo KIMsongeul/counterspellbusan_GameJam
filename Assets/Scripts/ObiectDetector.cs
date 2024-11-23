@@ -14,6 +14,7 @@ public class ObiectDetector : MonoBehaviour
     private void Awake()
     {
         mainCamera = Camera.main;
+        towerSpawn = FindObjectOfType<TowerSpawn>();
     }
 
     private void Update()

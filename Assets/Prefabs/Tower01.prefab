@@ -163,3 +163,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bulletPrefab: {fileID: 3509890694403408916, guid: 43c0c469a74d94647b42dcd92a99a753, type: 3}
   spawnPoint: {fileID: 1508631823610292057}
+  pv: {fileID: 0}
+  attackTarget: {fileID: 0}

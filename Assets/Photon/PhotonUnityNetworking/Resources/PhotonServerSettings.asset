@@ -42,6 +42,14 @@ MonoBehaviour:
   - SetLoadingUI
   - MasterClientReady
   - OtherClientReady
+  - SpawnTowerRPC
+  - Initialize
+  - SetTarget
+  - SetColor
+  - DestroyBullet
+  - SyncGameState
+  - UpdateBatteryImages
+  - GameOver
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

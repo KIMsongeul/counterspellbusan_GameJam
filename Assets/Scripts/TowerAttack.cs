@@ -1,112 +1,113 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Photon.Realtime;
+using Photon.Pun;
 using UnityEngine;
 
-public enum WeaponState { SearchTarget = 0, AttackToTarget}
 public class TowerAttack : MonoBehaviour
 {
     public GameObject bulletPrefab;
     public Transform spawnPoint;
     private float attackRate = 1f;
     private float tempAttackRate = 0f;
-    private float attackRange = 10f;
 
-    private WeaponState weaponState = WeaponState.SearchTarget;
-    private Transform attackTarget = null;
+    private SpriteRenderer sr;
+    public PhotonView pv;
 
+    public Transform attackTarget = null;
 
     private void Awake()
     {
-        attackTarget = GameObject.Find("Player").transform;
-    }
-
-    public void Setup()
-    {
-        
-        ChangeState(WeaponState.SearchTarget);
-    }
-
-    public void ChangeState(WeaponState newState)
-    {
-        StopCoroutine(weaponState.ToString());
-
-        weaponState = newState;
-        StopCoroutine(weaponState.ToString());
+        sr = GetComponentInChildren<SpriteRenderer>();
+        pv = GetComponent<PhotonView>();
     }
 
     private void Update()
     {
-        if (attackTarget != null)
-        {
-            RatateToTarget(attackTarget);
+        if (attackTarget == null) {
+            string enemyTag = PhotonNetwork.IsMasterClient ? "Red" : "Blue";
+            attackTarget = GameObject.FindGameObjectWithTag(enemyTag).transform;
+            AssignTarget(attackTarget);
+            return;
         }
+        
+        UpdateAttackCooldown();
+        TryAttack();
+        RotateTowardsTarget();
+    }
 
+    [PunRPC]
+    public void SetTarget(int targetViewID)
+    {
+        PhotonView targetView = PhotonView.Find(targetViewID);
+        if (targetView != null)
+        {
+            attackTarget = targetView.transform;
+        }
+    }
+
+    public void AssignTarget(Transform target)
+    {
+        if (!pv.IsMine) return;
+        
+        PhotonView targetView = target.GetComponent<PhotonView>();
+        if (targetView != null)
+        {
+            pv.RPC("SetTarget", RpcTarget.All, targetView.ViewID);
+        }
+    }
+
+    private void UpdateAttackCooldown()
+    {
         if (tempAttackRate > 0)
         {
             tempAttackRate -= Time.deltaTime;
         }
-        else
+    }
+
+    private void TryAttack()
+    {
+       
+        if (tempAttackRate <= 0)
         {
-            Attack();
+            ShootBullet();
             tempAttackRate = attackRate;
         }
     }
 
-    public void RatateToTarget(Transform target)
+    private void RotateTowardsTarget()
     {
-        float dx = target.position.x - transform.position.x;
-        float dy = target.position.y - transform.position.y;
-
-        float degree = Mathf.Atan2(dy, dx) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.Euler(0,0,degree);
+        Vector2 direction = attackTarget.position - transform.position;
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.Euler(0, 0, angle);
     }
 
-    private void Attack()
+    private void ShootBullet()
     {
-        if (attackTarget == null)
-        {
-            ChangeState(WeaponState.SearchTarget);
-            return;
-        }
-
-        if (Vector3.Distance(attackTarget.position, transform.position) > attackRange)
-        {
-            attackTarget = null;
-            ChangeState(WeaponState.SearchTarget);
-            return;
-        }
+        if (!pv.IsMine) return;
         
-        SpawnBullet();
-    }
-
-    private IEnumerator AttackToTarget()
-    {
-        while (true)
+        Vector2 direction = (attackTarget.position - transform.position).normalized;
+        GameObject bullet = PhotonNetwork.Instantiate("Prefabs/Bullet_Test", spawnPoint.position, Quaternion.identity);
+        
+        Debug.Log($"총알 생성: {bullet.name} at {spawnPoint.position}");
+        
+        TurretBullet bulletComponent = bullet.GetComponent<TurretBullet>();
+        if (bulletComponent != null)
         {
-            if (attackTarget == null)
-            {
-                ChangeState(WeaponState.SearchTarget);
-                break;
-            }
-
-            float distance = Vector3.Distance(attackTarget.position, transform.position);
-            if (distance > attackRange)
-            {
-                attackTarget = null;
-                ChangeState(WeaponState.SearchTarget);
-                break;
-            }
-
-            yield return new WaitForSeconds(attackRate);
-            SpawnBullet();
+            bulletComponent.GetComponent<PhotonView>().RPC("Initialize", RpcTarget.All, direction);
+            
+            Color towerColor = sr.color;
+            bulletComponent.GetComponent<PhotonView>().RPC("SetColor", RpcTarget.All, towerColor.r, towerColor.g, towerColor.b);
         }
     }
 
-    public void SpawnBullet()
+    [PunRPC]
+    public void SetColor(float r, float g, float b)
     {
-        
+        if (sr != null)
+        {
+            sr.color = new Color(r, g, b);
+        }
     }
-    
-
 }
