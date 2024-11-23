@@ -14,9 +14,12 @@ public class TowerAttack : MonoBehaviour
     public float bulletSpeed = 6f;
 
     private float bulletSizeMultiplier = 1f;
+    private bool isMultiShotActive = true;
     // private float bulletSpeedMultiplier = 1f;
     
     private Coroutine sizeCoroutine;
+    private Coroutine multiShotCoroutine;
+
     // private Coroutine speedCoroutine;
 
     private SpriteRenderer sr;
@@ -121,28 +124,60 @@ public class TowerAttack : MonoBehaviour
     private void ShootBullet()
     {
         if (!pv.IsMine) return;
-        
+
         Vector2 direction = (attackTarget.position - transform.position).normalized;
-        GameObject bullet = PhotonNetwork.Instantiate("Prefabs/Bullet_Test", spawnPoint.position, Quaternion.identity);
-        
-        Debug.Log("총알크기배수 : " + bulletSizeMultiplier);
-        bullet.transform.localScale *= bulletSizeMultiplier;
-        
-        Debug.Log($"총알 생성: {bullet.name} at {spawnPoint.position}");
-        
-        TurretBullet bulletComponent = bullet.GetComponent<TurretBullet>();
-        if (bulletComponent != null)
+
+        // 기본 총알 발사
+        FireBullet(direction);
+
+        // 멀티샷이 활성화되었으면 추가 총알 발사
+        if (isMultiShotActive)
         {
-            bulletComponent.GetComponent<PhotonView>().RPC("Initialize", RpcTarget.All, direction);
-            
-            Color towerColor = sr.color;
-            bulletComponent.GetComponent<PhotonView>().RPC("SetColor", RpcTarget.All, towerColor.r, towerColor.g, towerColor.b);
+            FireAdditionalShots(direction);
         }
     }
-    
-    
-    
+        private void FireBullet(Vector2 direction)
+        {
+            GameObject bullet = PhotonNetwork.Instantiate("Prefabs/Bullet_Test", spawnPoint.position, Quaternion.identity);
+            TurretBullet bulletComponent = bullet.GetComponent<TurretBullet>();
 
+            if (bulletComponent != null)
+            {
+                bulletComponent.GetComponent<PhotonView>().RPC("Initialize", RpcTarget.All, direction);
+                bullet.transform.localScale *= bulletSizeMultiplier; // 총알 크기 배율 적용
+            }
+        }
+        
+        
+        
+        private void FireAdditionalShots(Vector2 direction)
+        {
+            float angleOffset = 10f;
+            for (int i = -1; i <= 1; i++)
+            {
+                if (i == 0) continue;
+                float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg + (angleOffset * i);
+                Vector2 newDirection = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad));
+
+                FireBullet(newDirection);
+            }
+        }
+        
+        
+        [PunRPC]
+        public void ActivateMultiShot(float duration)
+        {
+            if (multiShotCoroutine != null) StopCoroutine(multiShotCoroutine);
+            multiShotCoroutine = StartCoroutine(ApplyMultiShot(duration));
+        }
+
+    private IEnumerator ApplyMultiShot(float duration)
+    {
+            isMultiShotActive = true;
+            yield return new WaitForSeconds(duration);
+            isMultiShotActive = false;
+    }
+    
     [PunRPC]
     public void SetColor(float r, float g, float b)
     {
@@ -151,4 +186,9 @@ public class TowerAttack : MonoBehaviour
             sr.color = new Color(r, g, b);
         }
     }
+    
 }
+    
+    
+    
+
