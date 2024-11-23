@@ -41,11 +41,11 @@ public class RazerToweAttack : MonoBehaviour
         {
             float waitTime = Random.Range(AttackReloadMin, AttackReloadMax);
             yield return new WaitForSeconds(waitTime);
-            StartCoroutine(Rayzer_shut(targetScale, duration));
+            StartCoroutine(Rayzer_shut(duration));
         }
     }
 
-    IEnumerator Rayzer_shut(float targetXScale, float duration)
+    IEnumerator Rayzer_shut(float duration)
     {
         Razer[0].SetActive(true);
         yield return new WaitForSeconds(1.5f);
@@ -56,20 +56,7 @@ public class RazerToweAttack : MonoBehaviour
 
         isAttacking = true;
         hasDealtDamage = false;
-
-        Vector3 initialScale = Razer[1].transform.localScale;
-        float elapsedTime = 0f;
-
-        while (elapsedTime < duration)
-        {
-            float newScaleX = Mathf.Lerp(initialScale.x, targetXScale, elapsedTime / duration);
-            Razer[1].transform.localScale = new Vector3(newScaleX, initialScale.y, initialScale.z);
-
-            elapsedTime += Time.deltaTime;
-            yield return null;
-        }
-
-        Razer[1].transform.localScale = new Vector3(targetXScale, initialScale.y, initialScale.z);
+        yield return new WaitForSeconds(duration);
         isAttacking = false;
         Razer[1].SetActive(false);
         NoRotation = false;
