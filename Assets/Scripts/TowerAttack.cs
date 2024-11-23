@@ -101,13 +101,4 @@ public class TowerAttack : MonoBehaviour
             bulletComponent.GetComponent<PhotonView>().RPC("SetColor", RpcTarget.All, towerColor.r, towerColor.g, towerColor.b);
         }
     }
-
-    [PunRPC]
-    public void SetColor(float r, float g, float b)
-    {
-        if (sr != null)
-        {
-            sr.color = new Color(r, g, b);
-        }
-    }
 }

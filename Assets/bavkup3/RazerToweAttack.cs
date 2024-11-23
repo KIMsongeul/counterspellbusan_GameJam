@@ -20,7 +20,7 @@ public class RazerToweAttack : MonoBehaviourPunCallbacks
 
     public Transform attackTarget;
     private PhotonView pv;
-    public string enemyTag;
+    public string enemyTag = "Red";
 
     void Awake()
     {
