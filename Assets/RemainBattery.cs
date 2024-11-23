@@ -27,12 +27,16 @@ public class RemainBattery : MonoBehaviour
             print("playerMove is null");
             return;
         }
-        UpdateBatteryImages(playerMove.HP);
+        if(!pv.IsMine) return;
+
+        if(playerMove.HP != 0){
+            pv.RPC("UpdateBatteryImages", RpcTarget.All);
+        }
     }
 
     [PunRPC]
-    public void UpdateBatteryImages(int hp){
-        print(hp);
+    public void UpdateBatteryImages(){
+        print($"UpdateBatteryImages hp: {playerMove.HP}");
         // 배터리 이미지 배열을 순회하면서 플레이어의 현재 체력에 따라 배터리 이미지를 활성화/비활성화
         switch(playerMove.HP){
             case 3:

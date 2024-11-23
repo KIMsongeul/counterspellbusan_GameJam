@@ -11,8 +11,10 @@ public class MainManager : MonoBehaviourPunCallbacks
     void Start()
     {
         print("Connecting to Lobby");
-        loadingUI.SetActive(true); // 로딩 UI 활성화
-        PhotonNetwork.ConnectUsingSettings(); // 먼저 마스터 서버에 연결
+        if(!PhotonNetwork.IsConnected){
+            loadingUI.SetActive(true); // 로딩 UI 활성화
+            PhotonNetwork.ConnectUsingSettings(); // 먼저 마스터 서버에 연결
+        }
     }
 
     public override void OnConnectedToMaster()

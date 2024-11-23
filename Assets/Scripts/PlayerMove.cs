@@ -58,6 +58,7 @@ public class PlayerMove : MonoBehaviourPun
         sr.color = new Color(r, g, b);
     }
 
+    [PunRPC]
     public void TakeDamage(){
         if(HP <= 1){
             Debug.Log(gameManager == null);

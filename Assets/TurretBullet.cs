@@ -61,6 +61,7 @@ public class TurretBullet : MonoBehaviourPunCallbacks
             if ((isBlue && other.CompareTag("Red")) || (!isBlue && other.CompareTag("Blue")))
             {
                 Debug.Log("적중!");
+                other.GetComponent<PlayerMove>().pv.RPC("TakeDamage", RpcTarget.Others);
                 other.GetComponent<PlayerMove>().TakeDamage();
                 DestroyBullet();
             }

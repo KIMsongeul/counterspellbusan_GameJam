@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 
 public class RazerHit : MonoBehaviour
@@ -15,17 +16,13 @@ public class RazerHit : MonoBehaviour
 
     public void OnTriggerEnter2D(Collider2D collision)
     {
-        if (!rta.isAttacking || rta.hasDealtDamage)
-        {
-            return;
-        }
+        string requiredTag = rta.enemyTag;
 
-        string requiredTag = rta.Team == 0 ? "Team2" : "Team1";
-
-        if (((1 << collision.gameObject.layer) & playerLayer) != 0 && collision.CompareTag(requiredTag))
+        if (collision.CompareTag(requiredTag))
         {
             Debug.Log("플레이어가 레이저에 맞았습니다.");
-            rta.hasDealtDamage = true;
+            collision.GetComponent<PlayerMove>().pv.RPC("TakeDamage", RpcTarget.Others);
+            collision.GetComponent<PlayerMove>().TakeDamage();
         }
     }
 }
