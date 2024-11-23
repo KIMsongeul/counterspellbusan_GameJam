@@ -25,7 +25,7 @@ public class PlayerMove : MonoBehaviourPun
         
         Vector2 moveDirection = new Vector2(horizontal, vertical).normalized;
         
-        rigid.velocity = moveDirection * speed * Time.deltaTime;
+        rigid.velocity = moveDirection * speed;
     }
 
     private void FixedUpdate()
