@@ -129,7 +129,7 @@ GameObject:
   - component: {fileID: 1894084244975851922}
   m_Layer: 0
   m_Name: Tower01
-  m_TagString: Untagged
+  m_TagString: Tower
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -165,6 +165,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bulletPrefab: {fileID: 3509890694403408916, guid: 43c0c469a74d94647b42dcd92a99a753, type: 3}
   spawnPoint: {fileID: 1508631823610292057}
+  pv: {fileID: 0}
+  attackTarget: {fileID: 0}
 --- !u!114 &-5537789286032408532
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -183,7 +185,8 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   observableSearch: 2
-  ObservedComponents: []
+  ObservedComponents:
+  - {fileID: 1894084244975851922}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0

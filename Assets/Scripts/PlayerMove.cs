@@ -32,5 +32,12 @@ public class PlayerMove : MonoBehaviourPun
     {
         Move();
     }
+
+    [PunRPC]
+    public void SetColor(float r, float g, float b)
+    {
+        SpriteRenderer sr = GetComponentInChildren<SpriteRenderer>();
+        sr.color = new Color(r, g, b);
+    }
 }
     
